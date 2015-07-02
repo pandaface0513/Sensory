@@ -28,11 +28,6 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener, SensorEventListener, View.OnClickListener {
 
-    private Button voiceBtn;
-    private boolean voiceOn = false;
-    private MediaRecorder mRecorder = null;
-    private Handler handler;
-
     private SensorManager sensorManager;
 
     private ArrayList<String> sensorNameList;
@@ -41,29 +36,12 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
     private static int REQUEST_CODE = 5;
 
+    private Button snd, mov;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        handler = new Handler();
-
-//        if(mRecorder == null){
-//            mRecorder = new MediaRecorder();
-//            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-//            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-//            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-//            mRecorder.setOutputFile("/dev/null");
-//            try {
-//                mRecorder.prepare();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            mRecorder.start();
-//        }
-
-        voiceBtn = (Button) findViewById(R.id.voiceBtn);
-        voiceBtn.setOnClickListener(this);
 
         //get reference to sensor and attach a listener
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -80,44 +58,14 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         ArrayAdapter <String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sensorNameList);
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);
+
+        snd = (Button) findViewById(R.id.soundBTN);
+        snd.setOnClickListener(this);
+        mov = (Button) findViewById(R.id.moveBTN);
+        mov.setOnClickListener(this);
     }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-//        if(mRecorder == null){
-//            mRecorder = new MediaRecorder();
-//            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-//            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-//            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-//            mRecorder.setOutputFile("/dev/null");
-//            try {
-//                mRecorder.prepare();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            mRecorder.start();
-//        }
 
-    }
-
-    @Override
-    protected void onPause(){
-//        if (mRecorder != null) {
-//            mRecorder.stop();
-//            mRecorder.release();
-//            mRecorder = null;
-//        }
-        super.onPause();
-    }
-
-    public double getAmplitude() {
-        if (mRecorder != null)
-            return  mRecorder.getMaxAmplitude();
-        else
-            return 0;
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -164,27 +112,21 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         startActivity(intent);
     }
 
-
     @Override
-    public void onClick(View view) {
-        if(view.getId() == R.id.voiceBtn){
-//            //toggle voice on
-//            if(voiceOn){
-//                voiceOn = false;
-//                mRecorder.stop();
-//            }else{
-//                voiceOn = true;
-//                mRecorder.start();
-//                Runnable detectSound = new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Double volume = getAmplitude();
-//                        Toast.makeText(MainActivity.this, Double.toString(volume), Toast.LENGTH_SHORT).show();
-//                    }
-//                };
-//
-//                handler.postDelayed(detectSound, 1000);
-//            }
+    public void onClick(View v) {
+        if(v.getId() == R.id.soundBTN){
+            //start Intent
+            Intent intent = new Intent(this, VoiceDetection.class);
+
+            //request with request code
+            startActivity(intent);
+        }
+        if(v.getId() == R.id.moveBTN){
+            //start Intent
+            Intent intent = new Intent(this, MoveDetection.class);
+
+            //request with request code
+            startActivity(intent);
         }
     }
 }

@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">Sensory</string>
+    <string name="app_name">HenryLo_A2</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="instruction">Here are list of all device sensors, click them to get details.</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_sensor">SensorActivity</string>
+    <string name="title_activity_voice_detection">VoiceDetection</string>
+    <string name="title_activity_move_detection">MoveDetection</string>
 </resources>

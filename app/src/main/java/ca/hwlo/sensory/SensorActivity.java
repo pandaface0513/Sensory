@@ -1,5 +1,7 @@
 package ca.hwlo.sensory;
 
+import android.content.Context;
+import android.os.Vibrator;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -23,7 +25,12 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
     private SensorManager sensorManager;
     private Sensor sensor;
 
-    private TextView data_txt;
+    private TextView data_txt, info_txt;
+
+    private Uri notif;
+    private Ringtone r;
+    private Vibrator v;
+    private int vibrationCycle, maxVibeCycle;
 
     private boolean isLight, isFlat, isNoisy, isMoving = false;
 
@@ -39,6 +46,18 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
 
+        vibrationCycle = 0;
+        maxVibeCycle = 4;
+
+        notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        r = RingtoneManager.getRingtone(getApplicationContext(), notif);
+
+        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        //set up textview
+        data_txt = (TextView) findViewById(R.id.sensorData);
+        info_txt = (TextView) findViewById(R.id.sensorInfo);
+
         if(b != null){
             String title = (String) b.get("sensor_type");
             setTitle(title);
@@ -48,9 +67,9 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
 
             if(sensor_name.contains("Accelerometer")){
                 sensor_type = Sensor.TYPE_ACCELEROMETER;
-            }else if(sensor_name.contains("Gyroscope")){
+            }else if(sensor_name.contains("Gyro")){
                 sensor_type = Sensor.TYPE_GYROSCOPE;
-            }else if(sensor_name.contains("Raw Gyroscope")){
+            }else if(sensor_name.contains("Raw Gyro")){
                 sensor_type = Sensor.TYPE_GYROSCOPE_UNCALIBRATED;
             }else if(sensor_name.contains("Magnetic")){
                 sensor_type =Sensor.TYPE_MAGNETIC_FIELD;
@@ -65,6 +84,8 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
                 sensor_type = Sensor.TYPE_LINEAR_ACCELERATION;
             }else if (sensor_name.contains("Gravity")) {
                 sensor_type = Sensor.TYPE_GRAVITY;
+            }else if(sensor_name.contains("Proximity")){
+                sensor_type = Sensor.TYPE_PROXIMITY;
             }else if(sensor_name.contains("Orientation")){
                 sensor_type =Sensor.TYPE_ORIENTATION;
             }else if(sensor_name.contains("Rotation")){
@@ -77,10 +98,19 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
 
             //get reference to the respective sensor
             sensor = sensorManager.getDefaultSensor(sensor_type);
+
+            if(sensor_type != 999) {
+                info_txt.setText("Name: " + sensor.getName() + '\n'
+                        + "Vendor: " + sensor.getVendor() + '\n'
+                        + "Version: " + sensor.getVersion() + '\n'
+                        + "Resolution: " + sensor.getResolution() + '\n'
+                        + "Max Range: " + sensor.getMaximumRange() + '\n'
+                        + "Min Delay: " + sensor.getMinDelay() + '\n'
+                        + "Max Delay: " + sensor.getMaxDelay() + '\n');
+            }
+
         }
 
-        //set up textview
-        data_txt = (TextView) findViewById(R.id.sensorData);
     }
 
     @Override
@@ -117,6 +147,30 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
         return super.onOptionsItemSelected(item);
     }
 
+    private void checkIfFlat(float[] vals){
+        double normOfVals = Math.sqrt(vals[0] * vals[0] + vals[1] * vals[1] + vals[2] * vals[2]);
+
+        //normalize the accelerometer vector
+        vals[2] = vals[2] / (float) normOfVals;
+
+        int inclination = (int) Math.round(Math.toDegrees(Math.acos(vals[2])));
+
+        if(inclination < 25 || inclination > 155){
+            //device is flat
+            if(vibrationCycle < maxVibeCycle) {
+                v.vibrate(1000);
+                vibrationCycle++;
+            }
+            Log.d("FLAT", "FLAT");
+        }else{
+            //device is not flat
+            Log.d("FLAT", "NOT FLAT");
+            v.cancel();
+            vibrationCycle = 0;
+        }
+
+    }
+
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
@@ -125,7 +179,7 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
 
         switch(type) {
             case 999:
-                data_txt.setText("This sensor is not supported! Sorry!");
+                info_txt.setText("This sensor is not supported! Sorry!");
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 data_txt.setText("X: " + vals[0] + "\n" + " Y: " + vals[1] + "\n" + " Z: " + vals[2]);
@@ -135,6 +189,8 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 data_txt.setText("X: " + vals[0] + "\n" + " Y: " + vals[1] + "\n" + " Z: " + vals[2]);
+                //check for the tilt
+                checkIfFlat(vals);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 data_txt.setText("X: " + vals[0] + "\n" + " Y: " + vals[1] + "\n" + " Z: " + vals[2]);
@@ -163,9 +219,9 @@ public class SensorActivity extends ActionBarActivity implements SensorEventList
                 if(vals[0] <= 0){
                     //beeps!
                     try{
-                        Uri notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notif);
-                        r.play();
+                        if(r.isPlaying() == false) {
+                            r.play();
+                        }
                         Log.d("LOL", "should be beeping");
                     }catch(Exception e){
                         e.printStackTrace();

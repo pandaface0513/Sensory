@@ -4,20 +4,18 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="ca.hwlo.sensory.SensorActivity">
+    tools:context="ca.hwlo.sensory.VoiceDetection">
 
-    <TextView
+    <TextView android:text="Sound Level Detection" android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/soundText" />
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/sensorInfo"
-        android:layout_below="@+id/sensorData" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/sensorData"
+        android:text="Start"
+        android:id="@+id/sound_btn"
+        android:layout_below="@+id/soundText"
         android:layout_alignParentStart="true" />
 
 </RelativeLayout>
